@@ -6,7 +6,6 @@ on:
 jobs:
   init:
     runs-on: ubuntu-latest
-    permissions: read-all|write-all
     # This is a hack, but I couldn't get on: create to work so here we are
     if: "github.event.repository.name != 'latex-template' && startsWith(github.event.head_commit.message, 'Initial commit')"
     steps:
