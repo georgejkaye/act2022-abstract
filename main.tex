@@ -48,10 +48,10 @@
 
     Such an equational system was first presented in~\cite{ghica2016categorical,ghica2017diagrammatic}, in which digital circuits with delay and feedback are modelled as morphisms in a freely generated traced cartesian category, or \emph{dataflow category}~\cite{cazanescu1990new,cazanescu1994feedback}.
     However, there were some informalities in the presentation, and, crucially, the framework was not guaranteed to reduce circuits with \emph{non-delay-guarded feedback} to a value.
-
-    The aim of this work is to wrap up the loose ends of the and present a sound and complete axiomatic framework for handling \emph{any} circuit with delay and feedback.
+    Our work brings this project to its conclusion.
 
     \paragraph*{Syntax.}
+    Before we can start constructing circuits, we must specify the components we can use.
 
     \begin{definition}[Circuit signature]
         Let \(\Sigma\) be a tuple \((\mathcal{V},\mathcal{G})\) where \(\mathcal{V}\) is a finite set of \emph{values} and \(\mathcal{G}\) is a finite set of tuples \((g,m)\) where \(g\) is a \emph{gate symbol} and \(m \in \nat\) is its \emph{arity}.
@@ -82,9 +82,8 @@
     The small boxes are \emph{values}: these represent the signals that can flow through our circuits.
     The first two are special: \iltikzfig{strings/structure/monoid/init} represents a \emph{disconnected wire}: a \emph{lack} of information.
     Conversely, \iltikzfig{strings/structure/monoid/init-white} represents a \emph{short circuit}: a \emph{glut} of information.
-    The remaining values are specified by our circuit signature.
-    Next come the generators for each gate symbol in our signature.
-    Then there are three \emph{structural} generators for forking, joining and stubbing wires.
+    The remaining values are specified by our signature.
+    Next come the generators for each gate symbol in our signature, and three \emph{structural} generators for forking, joining and stubbing wires.
     The final generator is a \emph{delay} generator: one can think of this as delaying its inputs for one tick of the clock.
     We write arbitrary sequential circuits obtained by composing generators together as squares \iltikzfig{circuits/components/circuits/f-seq}.
     If a circuit is \emph{combinational}, i.e. it contains no delay or trace, it is drawn in a lighter square \iltikzfig{circuits/components/circuits/f-comb}.
@@ -128,51 +127,125 @@
     \paragraph*{Equational reasoning.}
 
     Circuits of different structure can have the same semantics.
-    \begin{example}
-        The circuits \iltikzfig{circuits/examples/demorgan-lhs} and \iltikzfig{circuits/examples/demorgan-rhs} are syntactically different.
-        However, under the interpretation \(\{\iltikzfig{circuits/components/gates/and} \mapsto \wedge, \iltikzfig{circuits/components/gates/or} \mapsto \vee, \iltikzfig{circuits/components/gates/not} \mapsto \neg\}\), the two circuits map to the same stream function (by applying de Morgan's law).
-    \end{example}
-
-    However, in general it is computationally prohibitive to check that the corresponding streams for two circuits are equal~\cite{ghica2017diagrammatica}.
-    It is far more efficient to reason \emph{equationally}.
+    However, in general it is prohibitive to check that the corresponding streams for two circuits are equal~\cite{ghica2017diagrammatica}: it is more efficient to reason \emph{equationally}.
     
-    Given a set of axioms \(\mathcal{E}\), we write \(\iltikzfig{circuits/components/circuits/f-seq} \eqaxioms{\mathcal{E}} \iltikzfig{circuits/components/circuits/g-seq}\) if \iltikzfig{circuits/components/circuits/f-seq} can be rewritten to \iltikzfig{circuits/components/circuits/g-seq} by equations in \(\mathcal{E}\).
-
-    \begin{theorem}
-        Given values 
-    \end{theorem}
-    \begin{proof}
-        
-    \end{proof}
-
+    Equations are identities that hold in the quotient category \(\scircsigmai\).
+    Given a set of equations \(\mathcal{E}\), we write \(\iltikzfig{circuits/components/circuits/f-seq} \eqaxioms{\mathcal{E}} \iltikzfig{circuits/components/circuits/g-seq}\) if \iltikzfig{circuits/components/circuits/f-seq} can be rewritten to \iltikzfig{circuits/components/circuits/g-seq} by equations in \(\mathcal{E}\).
+    Note that since we are using string diagrams, the axioms of STMCs are `absorbed' into the notation and always hold.
+    To explictly indicate when we are `applying' these axioms by mutating the diagram we will write \(\eqaxioms{STMC}\).
 
     \begin{figure}
-        \newcommand{\circaxiom}[2]{\iltikzfig{circuits/axioms/#1-#2}}
-        \newcommand{\structaxiom}[2]{\iltikzfig{strings/structure/#1-#2}}
-        \newcommand{\cartaxiom}[2]{\iltikzfig{strings/cartesian/#1-#2}}
         \centering
         \begin{align*}
-            \circaxiom{fork}{lhs}
+            \iltikzfig{circuits/axioms/join-lhs}
             &\eqaxiomsc
-            \circaxiom{fork}{rhs}
+            \iltikzfig{circuits/axioms/join-rhs}
             &
-            \circaxiom{join}{lhs}
+            \iltikzfig{circuits/axioms/gate-lhs}
             &\eqaxiomsc
-            \circaxiom{join}{rhs}
+            \iltikzfig{circuits/axioms/gate-rhs}
             &
-            \circaxiom{gate}{lhs}
+            \iltikzfig{strings/structure/comonoid/unitality-l-lhs}
             &\eqaxiomsc
-            \circaxiom{gate}{rhs}
+            \iltikzfig{strings/structure/comonoid/unitality-l-rhs}
+            \eqaxiomsc
+            \iltikzfig{strings/structure/comonoid/unitality-r-lhs}
+            &
+            \iltikzfig{circuits/axioms/gate-lhs}
+            &\eqaxiomsc
+            \iltikzfig{circuits/axioms/gate-rhs} 
+            &
+            \iltikzfig{circuits/axioms/disconnect-lhs}
+            &\eqaxiomsc
+            \iltikzfig{circuits/axioms/disconnect-rhs} 
+            \\
+        \end{align*}
+        \begin{align*}
+            \iltikzfig{strings/cartesian/naturality-copy-lhs}
+            &\eqaxiomsc
+            \iltikzfig{strings/cartesian/naturality-copy-rhs}
+            &
+            \iltikzfig{strings/cartesian/naturality-discard-lhs}
+            &\eqaxiomsc
+            \iltikzfig{strings/cartesian/naturality-discard-rhs}
+            &
+            \iltikzfig{circuits/axioms/streaming-lhs}
+            &\eqaxiomsc
+            \iltikzfig{circuits/axioms/streaming-rhs} 
+            &
+            \iltikzfig{circuits/instant-feedback/axiom-lhs}
+            &\eqaxiomsc
+            \iltikzfig{circuits/instant-feedback/axiom-rhs}
         \end{align*}
         \caption{The set of axioms \(\mathcal{C}\) for reducing closed circuits.}
     \end{figure}
 
-
     \paragraph*{Productivity.}
+    A common use of equational reasoning is to take a circuit and reduce it to its output values.
+
+    \begin{definition}[Productivity]
+        For a set of equations \(\mathcal{E}\), a closed sequential circuit \iltikzfig{circuits/components/fcirc-closed-traced} is called \emph{productive under} \(\mathcal{E}\) if there exist values \iltikzfig{circuits/components/values/vs} and sequential circuit \iltikzfig{circuits/components/gcirc-closed-traced} such that
+        \(
+            \iltikzfig{circuits/components/fcirc-closed-traced} 
+            \eqaxioms{\mathcal{E}}
+            \iltikzfig{circuits/productivity/productive}
+        \).
+    \end{definition}
+
+    \noindent
+    A set of axioms was presented in~\cite{ghica2016categorical}.
+    However, there was a shortcoming: these axioms could not reliably handle circuits with \emph{non-delay-guarded feedback}, in which every feedback loop does not pass through a delay generator.
+    Such circuits are generally not handled well by traditional tools, so one might imagine that such circuits are not useful.
+    However, in some circuits `instant feedback' can actually be beneficial: for example, it can be used to share resources between different parts of a circuit~\cite{riedel2004cyclic,mendler2012constructive}.
+
+    \begin{definition}
+       
+        For a combinational circuit 
+        \(\iltikzfig{circuits/instant-feedback/fixpoint-lhs}\)
+        , let its \emph{\(n\)th iteration} 
+        \(\iltikzfig{circuits/instant-feedback/fn-box}\) 
+        z
+        be defined recursively as 
+        \(
+            \iltikzfig{circuits/instant-feedback/f0-box} 
+            := 
+            \iltikzfig{circuits/instant-feedback/f0-definition}
+        \) 
+        and 
+        \(
+            \iltikzfig{circuits/instant-feedback/fkp1-box} 
+            := 
+            \iltikzfig{circuits/instant-feedback/fkp1-definition}
+        \).
+        Let \(\interpretation = (\values,\valueinterpretation,\gateinterpretation)\) be an interpretation and let \(c\) be the length of the longest chain in \(\values\): the \emph{fixpoint} of 
+        \(\iltikzfig{circuits/instant-feedback/fixpoint-lhs}\)
+        in \(\interpretation\), denoted as 
+        \(\iltikzfig{circuits/instant-feedback/fixpoint}\)
+        , is defined as \(\iltikzfig{circuits/instant-feedback/fc-box}\).
+    \end{definition}
 
     \begin{theorem}
-        For any closed sequential circuit \iltikzfig{circuits/components/circuits/f-seq-closed}, there exist values \iltikzfig{circuits/components/values/vs} and sequential circuit \iltikzfig{circuits/components/circuits/g-seq-closed} such that \(\iltikzfig{circuits/components/circuits/f-seq-closed} \eqaxiomsc \iltikzfig{circuits/productivity/productive}\).
+        Any sequential circuit \iltikzfig{circuits/components/circuits/f-seq-closed} is productive under \(\mathcal{C}\).
     \end{theorem}
+
+    \noindent
+    By repeatedly applying productivity, a stream of values can be obtained for \emph{any} sequential circuit \(\iltikzfig{circuits/components/circuits/f-seq}\) given some inputs \(\iltikzfig{circuits/components/values/vs}\).
+
+    \paragraph*{Full abstraction.}
+
+    When face
+
+    \begin{definition}
+        A set of equational \(\mathcal{E}\)
+    \end{definition}
+
+
+    \begin{theorem}[Full abstraction]
+        Let \(\mathcal{E}\) be a Given m then \(\iltikzfig{circuits/components/circuits/f-seq} \eqaxioms{\mathcal{C} + \mathcal{E}}\) if and only if \(\circuittostream[\iltikzfig{circuits/components/circuits/f-seq}]{\interpretation} = \circuittostream[\iltikzfig{circuits/components/circuits/g-seq}]{\interpretation}\).
+    \end{theorem}
+    \begin{proof}
+        
+    \end{proof}
 
     \printbibliography[heading=bibintoc,title={References}]
 
