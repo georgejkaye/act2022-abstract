@@ -1,8 +1,179 @@
-\documentclass{article}
+\documentclass[10pt]{article}
 
-\title{act2022-abstract}
-\author{georgejkaye}
+\usepackage[utf8]{inputenc}
+\usepackage[margin=0.5in]{geometry}
+\usepackage{kpfonts}
+
+\PassOptionsToPackage{usenames, dvipsnames}{xcolor}
+\usepackage{figures/tikzit}
+
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{amsmath}
+\usepackage{stmaryrd}
+\usepackage{microtype}
+\usepackage{enumitem}
+
+\usepackage[style=alphabetic]{biblatex}
+\usepackage[colorlinks=true, citecolor=Green, linkcolor=NavyBlue, urlcolor=BrickRed]{hyperref}
+\usepackage[capitalise]{cleveref}
+
+\input{macros/sets}
+\input{macros/category}
+\input{macros/streams}
+\input{macros/circuits}
+\input{macros/theorems}
+
+\input{figures/circuits.tikzstyles}
+\input{figures/circuits.tikzdefs}
+
+\setcounter{biburlnumpenalty}{100}
+\setcounter{biburlucpenalty}{100}
+\setcounter{biburllcpenalty}{100}
+
+\addbibresource{refs/refs.biblatex.bib}
+\pagenumbering{gobble} 
+
+\title{\vspace{-3em}Full abstraction for digital circuits: \textbf{Extended abstract}}
+\author{\textbf{George Kaye}, David Sprunger and Dan R. Ghica}
 
 \begin{document}
     \maketitle
+
+    \paragraph*{Motivation.}
+    Digital circuits are ubiquitous in today's society, so it is essential that we have easy ways to verify their correctness and reason with them.
+    Conventionally, this is done by translation into an executable model such as an automaton, which can be simulated to observe its behaviour.
+    An alternative approach, used commonly in software, is to reason \emph{syntactically}: programs are formulated equationally and can be reduced step by step by identifying \emph{redexes} in terms.
+    When provided with inputs, the goal of such a system is to apply redexes and eventually return an output value.
+
+    Such an equational system was first presented in~\cite{ghica2016categorical,ghica2017diagrammatic}, in which digital circuits with delay and feedback are modelled as morphisms in a freely generated traced cartesian category, or \emph{dataflow category}~\cite{cazanescu1990new,cazanescu1994feedback}.
+    However, there were some informalities in the presentation, and, crucially, the framework was not guaranteed to reduce circuits with \emph{non-delay-guarded feedback} to a value.
+
+    The aim of this work is to wrap up the loose ends of the and present a sound and complete axiomatic framework for handling \emph{any} circuit with delay and feedback.
+
+    \paragraph*{Syntax.}
+
+    \begin{definition}[Circuit signature]
+        Let \(\Sigma\) be a tuple \((\mathcal{V},\mathcal{G})\) where \(\mathcal{V}\) is a finite set of \emph{values} and \(\mathcal{G}\) is a finite set of tuples \((g,m)\) where \(g\) is a \emph{gate symbol} and \(m \in \nat\) is its \emph{arity}.
+    \end{definition}
+
+    \begin{definition}[Sequential circuits]
+        For a signature \(\Sigma\), let \(\scircsigma\) be the symmetric traced monoidal category freely generated over:
+        \begin{align*}
+            \iltikzfig{strings/structure/monoid/init} 
+            &&
+            \iltikzfig{strings/structure/monoid/init-white} 
+            &&
+            \iltikzfig{circuits/components/values/v}\ \text{for each}\ v \in \circuitsignaturevalues
+            &&
+            \iltikzfig{circuits/components/gates/gate-labelled}\ \text{for each}\ (g,m) \in \circuitsignaturegates
+            &&
+            \iltikzfig{strings/structure/comonoid/copy}
+            &&
+            \iltikzfig{strings/structure/monoid/merge}
+            &&
+            \iltikzfig{strings/structure/comonoid/discard}
+            &&
+            \iltikzfig{circuits/components/delay}
+        \end{align*}
+    \end{definition}    
+
+    \noindent
+    The small boxes are \emph{values}: these represent the signals that can flow through our circuits.
+    The first two are special: \iltikzfig{strings/structure/monoid/init} represents a \emph{disconnected wire}: a \emph{lack} of information.
+    Conversely, \iltikzfig{strings/structure/monoid/init-white} represents a \emph{short circuit}: a \emph{glut} of information.
+    The remaining values are specified by our circuit signature.
+    Next come the generators for each gate symbol in our signature.
+    Then there are three \emph{structural} generators for forking, joining and stubbing wires.
+    The final generator is a \emph{delay} generator: one can think of this as delaying its inputs for one tick of the clock.
+    We write arbitrary sequential circuits obtained by composing generators together as squares \iltikzfig{circuits/components/circuits/f-seq}.
+    If a circuit is \emph{combinational}, i.e. it contains no delay or trace, it is drawn in a lighter square \iltikzfig{circuits/components/circuits/f-comb}.
+
+    \paragraph*{Semantics.}
+
+    Circuits specified syntactically have no computational content associated with them.
+    To add \emph{semantics} to circuits, first the signature must be interpreted in some domain.
+
+    \begin{definition}[Interpretation]\label{def:interpretation}
+        Let \(\circuitsignature = (\circuitsignaturevalues,\circuitsignaturegates)\) be a circuit signature.
+        A interpretation of \(\circuitsignature\) is a tuple \(\interpretation = (\mathbf{V}, \valueinterpretation,\gateinterpretation)\) where \(\values\) is a finite lattice, \(\valueinterpretation\) is a bijective function \(\valueinterpretation \to \values \setminus \{\bot,\top\}\) and \(\gateinterpretation\) is a map from each gate \((g,m) \in \circuitsignaturegates\) to a monotone function \(\morph{\overline{g}}{\valuetuple{m}}{\values}\).
+    \end{definition}
+
+    \noindent
+    The semantics of circuits is that of \emph{stream functions}, which take as input a stream and output a stream.
+    In particular, we are interested in stream functions of the form \(\valuetuplestream{m} \to \valuetuplestream{n}\).
+
+    \begin{definition}
+        For an interpretation \(\interpretation = (\values, \valueinterpretation, \gateinterpretation)\), let \(\streami\) be the prop with morphisms \(m \to n\) as stream functions \(\valuetuplestream{m} \to \valuetuplestream{n}\) freely generated over
+        stream functions for values \(\morph{\tilde{v}}{0}{1}\) for each \(v \in \values\), defined as \(\tilde{v}(0) = v\) and \(\tilde{v}(i) = \bot\); for gates \(\morph{\tilde{g}}{m}{1}\) for each \((g,m) \in \circuitsignaturegates\) defined as \(\tilde{g}(\sigma)(i) = g(\sigma(i))\); and for delay \(\morph{\delay}{1}{1}\) defined as \(\delay(\sigma)(0) = \bot\) and \(\delay(\sigma)(i+1)\).
+    \end{definition}
+
+    \begin{theorem}
+        \(\streami\) is traced.
+    \end{theorem}
+
+    \begin{definition}\label{def:circuittostreams}
+        Let \(\morph{\circuittostream{\interpretation}}{\scircsigma}{\streami}\) be a traced prop morphism, mapping circuits to appropriate stream functions.
+        The details are omitted, see~\cite{ghica2022full}.
+    \end{definition}
+
+    \noindent
+    If two circuits map to the same semantics in \(\streami\), we say they are \emph{extensionally equivalent}, written \(\iltikzfig{circuits/components/circuits/f-seq} \extequivi \iltikzfig{circuits/components/circuits/g-seq}\).
+
+    \begin{theorem}[\cite{ghica2022full}]
+        Let \(\scircsigmai\) be the category obtained by quotienting \(\scircsigma\) by \(\extequivi\).
+        Then, \(\scircsigmai \cong \streami\).
+    \end{theorem}
+
+    \paragraph*{Equational reasoning.}
+
+    Circuits of different structure can have the same semantics.
+    \begin{example}
+        The circuits \iltikzfig{circuits/examples/demorgan-lhs} and \iltikzfig{circuits/examples/demorgan-rhs} are syntactically different.
+        However, under the interpretation \(\{\iltikzfig{circuits/components/gates/and} \mapsto \wedge, \iltikzfig{circuits/components/gates/or} \mapsto \vee, \iltikzfig{circuits/components/gates/not} \mapsto \neg\}\), the two circuits map to the same stream function (by applying de Morgan's law).
+    \end{example}
+
+    However, in general it is computationally prohibitive to check that the corresponding streams for two circuits are equal~\cite{ghica2017diagrammatica}.
+    It is far more efficient to reason \emph{equationally}.
+    
+    Given a set of axioms \(\mathcal{E}\), we write \(\iltikzfig{circuits/components/circuits/f-seq} \eqaxioms{\mathcal{E}} \iltikzfig{circuits/components/circuits/g-seq}\) if \iltikzfig{circuits/components/circuits/f-seq} can be rewritten to \iltikzfig{circuits/components/circuits/g-seq} by equations in \(\mathcal{E}\).
+
+    \begin{theorem}
+        Given values 
+    \end{theorem}
+    \begin{proof}
+        
+    \end{proof}
+
+
+    \begin{figure}
+        \newcommand{\circaxiom}[2]{\iltikzfig{circuits/axioms/#1-#2}}
+        \newcommand{\structaxiom}[2]{\iltikzfig{strings/structure/#1-#2}}
+        \newcommand{\cartaxiom}[2]{\iltikzfig{strings/cartesian/#1-#2}}
+        \centering
+        \begin{align*}
+            \circaxiom{fork}{lhs}
+            &\eqaxiomsc
+            \circaxiom{fork}{rhs}
+            &
+            \circaxiom{join}{lhs}
+            &\eqaxiomsc
+            \circaxiom{join}{rhs}
+            &
+            \circaxiom{gate}{lhs}
+            &\eqaxiomsc
+            \circaxiom{gate}{rhs}
+        \end{align*}
+        \caption{The set of axioms \(\mathcal{C}\) for reducing closed circuits.}
+    \end{figure}
+
+
+    \paragraph*{Productivity.}
+
+    \begin{theorem}
+        For any closed sequential circuit \iltikzfig{circuits/components/circuits/f-seq-closed}, there exist values \iltikzfig{circuits/components/values/vs} and sequential circuit \iltikzfig{circuits/components/circuits/g-seq-closed} such that \(\iltikzfig{circuits/components/circuits/f-seq-closed} \eqaxiomsc \iltikzfig{circuits/productivity/productive}\).
+    \end{theorem}
+
+    \printbibliography[heading=bibintoc,title={References}]
+
 \end{document}
