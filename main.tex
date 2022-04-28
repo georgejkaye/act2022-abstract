@@ -197,23 +197,19 @@
             \eqaxiomsc
             \iltikzfig{strings/structure/comonoid/unitality-r-lhs}
             &
-            \iltikzfig{circuits/axioms/gate-lhs}
-            &\eqaxiomsc
-            \iltikzfig{circuits/axioms/gate-rhs} 
-            &
             \iltikzfig{circuits/axioms/disconnect-lhs}
             &\eqaxiomsc
             \iltikzfig{circuits/axioms/disconnect-rhs} 
-            \\
+            &
+            \iltikzfig{strings/cartesian/naturality-discard-lhs}
+            &\eqaxiomsc
+            \iltikzfig{strings/cartesian/naturality-discard-rhs}
+            &
         \end{align*}
         \begin{align*}
             \iltikzfig{strings/cartesian/naturality-copy-lhs}
             &\eqaxiomsc
             \iltikzfig{strings/cartesian/naturality-copy-rhs}
-            &
-            \iltikzfig{strings/cartesian/naturality-discard-lhs}
-            &\eqaxiomsc
-            \iltikzfig{strings/cartesian/naturality-discard-rhs}
             &
             \iltikzfig{circuits/axioms/streaming-lhs}
             &\eqaxiomsc
@@ -223,7 +219,7 @@
             &\eqaxiomsc
             \iltikzfig{circuits/instant-feedback/axiom-rhs}
         \end{align*}
-        \caption{The set of axioms \(\mathcal{C}\) for reducing closed circuits.}
+        \caption{The set of equations \(\mathcal{C}\) for reducing closed circuits.}
         \label{fig:closed-circuit-axioms}
     \end{figure}
 
@@ -240,9 +236,9 @@
     \end{definition}
 
     \noindent
-    A set of axioms was presented in~\cite{ghica2016categorical}.
-    However, there was a shortcoming: these axioms could not reliably handle circuits with \emph{non-delay-guarded feedback}, in which every feedback loop does not pass through a delay generator.
-    While in some circuits `instant feedback' is useful~\cite{riedel2004cyclic,mendler2012constructive}, in other cases it can be troublesome.
+    A set of equations was presented in~\cite{ghica2016categorical}.
+    However, they were not \emph{complete}: these axioms could not necessarily handle circuits with \emph{non-delay-guarded feedback}, in which every feedback loop does not pass through a delay generator.
+    While in some circuits `instant feedback' is useful~\cite{riedel2004cyclic,mendler2012constructive}, in other cases it can result in an unproductive circuit.
     To tackle this, we take inspiration from \emph{Kleene's fixpoint theorem}: since all the gates in an interpretation are monotonic, they have a least fixpoint; since our lattice is finite, we are able to compute it after a finite number of iterations.
 
     \begin{definition}
@@ -251,8 +247,7 @@
         \(\iltikzfig{circuits/instant-feedback/fixpoint-lhs}\)
         , let its \emph{\(n\)th iteration} 
         \(\iltikzfig{circuits/instant-feedback/fn-box}\) 
-        z
-        be defined recursively as 
+        be defined inductively as 
         \(
             \iltikzfig{circuits/instant-feedback/f0-box} 
             := 
@@ -272,11 +267,10 @@
     \end{definition}
 
     \noindent
-    The complete set of axioms for closed circuits is shown in \cref{fig:closed-circuit-axioms}.
-    That this is the `correct' set is justified by the following theorem:
+    The complete set of equations \(\mathcal{C}\) for closed circuits is shown in \cref{fig:closed-circuit-axioms}.
 
     \begin{theorem}
-        Any sequential circuit \iltikzfig{circuits/components/circuits/f-seq-closed} is productive under \(\mathcal{C}\).
+        Any closed sequential circuit \iltikzfig{circuits/components/circuits/f-seq-closed} is productive under \(\mathcal{C}\).
     \end{theorem}
 
     \noindent
@@ -291,40 +285,17 @@
     \iltikzfig{circuits/examples/demorgan-rhs}: when interpreted under \(\interpretation_\star\) they have the same stream function by applying de Morgan's law.
     To tackle this we must consider additional equivalences between \emph{combinational circuits}.
 
-    Independent of a signature, all circuits will include the generators for fork, join, stub and the disconnected wire.
+    All circuits will include the generators for the fork, join, stub and disconnected wire.
     Under any interpretation, these four generators form a \emph{bialgebra}, so we can add the corresponding axioms listed in to our framework, listed in \cref{fig:bialgebra-axioms} .
-    Finally, we must add any axioms for equivalences between gates.
+    All that remains is to add equations for equivalences between gates
 
     \begin{definition}
-        We say that a set of equations \(\mathcal{E}\) is \emph{combinationally complete} for an interpretation \(\interpretation\) if for all combinational circuits \(\iltikzfig{circuits/components/circuits/f-comb}\) and \(\iltikzfig{circuits/components/circuits/g-comb}\) containing at least one gate generator, if \(\circuittostream[\iltikzfig{circuits/components/circuits/f-comb}]{\interpretation} = \circuittostream[\iltikzfig{circuits/components/circuits/g-comb}]{\interpretation}\) then there exists a sequence of axioms in \(\mathcal{E}\) such that \(\circuittostream[\iltikzfig{circuits/components/circuits/f-comb}]{\interpretation} \eqaxioms{\mathcal{E}}\circuittostream[\iltikzfig{circuits/components/circuits/g-comb}]{\interpretation}\).
+        We say that a set of equations \(\mathcal{E}\), where each \(e \in \mathcal{E}\) contains at least one gate, is \emph{combinationally complete} for an interpretation \(\interpretation\) if for all combinational circuits \(\iltikzfig{circuits/components/circuits/f-comb}\) and \(\iltikzfig{circuits/components/circuits/g-comb}\), if \(\circuittostream[\iltikzfig{circuits/components/circuits/f-comb}]{\interpretation} = \circuittostream[\iltikzfig{circuits/components/circuits/g-comb}]{\interpretation}\) then there exists a sequence of axioms in \(\mathcal{E}\) such that \(\circuittostream[\iltikzfig{circuits/components/circuits/f-comb}]{\interpretation} \eqaxioms{\mathcal{E}}\circuittostream[\iltikzfig{circuits/components/circuits/g-comb}]{\interpretation}\).
     \end{definition}
 
     \begin{example}
         A set of equations combinationally complete for \(\interpretation_\star\) are listed in \cref{fig:combinational-axioms}.
     \end{example}
-
-    \begin{figure}[p]
-        \centering
-        \begin{align*}
-            \iltikzfig{circuits/axioms/belnap/and-idempotent-lhs}
-            &\eqaxioms{\mathcal{R}}
-            \iltikzfig{circuits/axioms/belnap/and-idempotent-rhs}
-            &
-            \iltikzfig{circuits/axioms/belnap/or-idempotent-lhs}
-            &\eqaxioms{\mathcal{R}}
-            \iltikzfig{circuits/axioms/belnap/or-idempotent-rhs}
-            &
-            \iltikzfig{circuits/axioms/belnap/and-commutative-lhs}
-            &\eqaxioms{\mathcal{R}}
-            \iltikzfig{circuits/axioms/belnap/and-commutative-rhs}
-            &
-            \iltikzfig{circuits/axioms/belnap/or-commutative-lhs}
-            &\eqaxioms{\mathcal{R}}
-            \iltikzfig{circuits/axioms/belnap/or-commutative-rhs}
-        \end{align*}
-        \caption{A set of axioms \(\mathcal{R}\) which is combinationally complete for \(\interpretation_\star\).}
-        \label{fig:combinational-axioms}
-    \end{figure}
 
     \begin{figure}
         \centering
@@ -336,7 +307,9 @@
             \iltikzfig{strings/structure/comonoid/associativity-lhs} &\eqaxioms{\mathcal{B}}
             \iltikzfig{strings/structure/comonoid/associativity-rhs} &
             \iltikzfig{strings/structure/comonoid/commutativity-lhs} &\eqaxioms{\mathcal{B}}
-            \iltikzfig{strings/structure/comonoid/commutativity-rhs} \\
+            \iltikzfig{strings/structure/comonoid/commutativity-rhs}
+        \end{align*}
+        \begin{align*}
             \iltikzfig{strings/structure/monoid/unitality-l-lhs} &\eqaxioms{\mathcal{B}}
             \iltikzfig{strings/structure/monoid/unitality-l-rhs} &
             \iltikzfig{strings/structure/monoid/unitality-r-lhs} &\eqaxioms{\mathcal{B}}
@@ -344,7 +317,9 @@
             \iltikzfig{strings/structure/monoid/associativity-lhs} &\eqaxioms{\mathcal{B}}
             \iltikzfig{strings/structure/monoid/associativity-rhs} &
             \iltikzfig{strings/structure/monoid/commutativity-lhs} &\eqaxioms{\mathcal{B}}
-            \iltikzfig{strings/structure/monoid/commutativity-rhs} \\
+            \iltikzfig{strings/structure/monoid/commutativity-rhs}
+        \end{align*}
+        \begin{align*}
             \iltikzfig{strings/structure/bialgebra/copy-merge-lhs} &\eqaxioms{\mathcal{B}}
             \iltikzfig{strings/structure/bialgebra/copy-merge-rhs} &
             \iltikzfig{strings/structure/bialgebra/merge-copy-lhs} &\eqaxioms{\mathcal{B}}
@@ -356,6 +331,85 @@
        \end{align*}
         \caption{Set \(\mathcal{B}\) of \emph{bialgebra} equations.}
         \label{fig:bialgebra-axioms}
+    \end{figure}
+
+    \begin{figure}[p]
+        \centering
+        \begin{align*}
+            \iltikzfig{circuits/axioms/belnap/or-associativity-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/or-associativity-rhs}
+            &
+            \iltikzfig{circuits/axioms/belnap/and-associativity-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/and-associativity-rhs}
+            &
+            \iltikzfig{circuits/axioms/belnap/or-commutativity-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/or-commutativity-rhs}
+            &
+            \iltikzfig{circuits/axioms/belnap/and-commutativity-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/and-commutativity-rhs}
+        \end{align*}
+        \begin{align*}
+            \iltikzfig{circuits/axioms/belnap/or-identity-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/or-identity-rhs}
+            &
+            \iltikzfig{circuits/axioms/belnap/and-identity-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/and-identity-rhs}
+            &
+            \iltikzfig{circuits/axioms/belnap/or-annihilator-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/or-annihilator-rhs}
+            &
+            \iltikzfig{circuits/axioms/belnap/and-annihilator-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/and-annihilator-rhs}
+        \end{align*}
+        \begin{align*}
+            \iltikzfig{circuits/axioms/belnap/or-idempotent-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/or-idempotent-rhs}
+            &
+            \iltikzfig{circuits/axioms/belnap/and-idempotent-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/and-idempotent-rhs}
+            &
+            \iltikzfig{circuits/axioms/belnap/absorption-1-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/absorption-1-rhs}
+            &
+            \iltikzfig{circuits/axioms/belnap/absorption-2-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/absorption-2-rhs}
+        \end{align*}
+        \begin{align*}
+            \iltikzfig{circuits/axioms/belnap/or-and-distributivity-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/or-and-distributivity-rhs}
+            &
+            \iltikzfig{circuits/axioms/belnap/and-or-distributivity-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/and-or-distributivity-rhs}
+        \end{align*}
+        \begin{align*}
+            \iltikzfig{circuits/axioms/belnap/double-negation-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/double-negation-rhs}
+            &
+            \iltikzfig{circuits/axioms/belnap/de-morgan-1-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/de-morgan-1-rhs}
+            &
+            \iltikzfig{circuits/axioms/belnap/de-morgan-2-lhs}
+            &\eqaxioms{\mathcal{P}}
+            \iltikzfig{circuits/axioms/belnap/de-morgan-2-rhs}
+        \end{align*}
+        \caption{A set of equations \(\mathcal{P}\) which is combinationally complete for \(\interpretation_\star\).}
+        \label{fig:combinational-axioms}
     \end{figure}
 
     \begin{theorem}[Full abstraction]
