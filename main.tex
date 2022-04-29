@@ -34,7 +34,7 @@
 \addbibresource{refs/refs.biblatex.bib}
 \pagenumbering{gobble} 
 
-\title{\vspace{-3em}Fully abstract categorical semantics for digital circuits: \textbf{Extended abstract}}
+\title{\vspace{-3em}Fully abstract categorical semantics for digital circuits\\\textbf{Extended abstract}}
 \author{\textbf{George Kaye}, David Sprunger and Dan R. Ghica}
 
 \begin{document}
@@ -51,6 +51,7 @@
     Our work brings this project to its conclusion, formalising the categorical semantics and completing the set of equations.
 
     \paragraph*{Syntax.}
+    Circuits are defined over a \emph{signature}.
 
     \begin{definition}[Circuit signature]
         Let \(\Sigma\) be a tuple \((\mathcal{V},\disconnected,\shortcircuit,\mathcal{G})\) where \(\mathcal{V}\) is a finite set of \emph{values} with distinguished elements \(\disconnected,\shortcircuit \in \mathcal{V}\), and \(\mathcal{G}\) is a finite set of tuples \((g,m)\) where \(g\) is a \emph{gate symbol} and \(m \in \nat\) is its \emph{arity}.
@@ -166,11 +167,11 @@
     \end{definition}
 
     \noindent
-    If two circuits map to the same semantics in \(\streami\), we say they are \emph{extensionally equivalent}, written \(\iltikzfig{circuits/components/circuits/f-seq} \eqaxioms{\mathcal{B}} \iltikzfig{circuits/components/circuits/g-seq}\).
+    If two circuits map to the same semantics in \(\streami\), we say they are \emph{extensionally equivalent}, written \(\iltikzfig{circuits/components/circuits/f-seq} \extequivi \iltikzfig{circuits/components/circuits/g-seq}\).
 
     \begin{theorem}[\cite{ghica2022full}]
-        Let \(\scircsigmai\) be the category obtained by quotienting \(\scircsigma\) by \(\eqaxioms{\mathcal{B}}\).
-        Then, there is an isomorphism of categories \(\scircsigmai \cong \streami\).
+        Let \(\scircsigmai\) be the category obtained by quotienting \(\scircsigma\) by \(\extequivi\).
+        Then there is an isomorphism of categories \(\scircsigmai \cong \streami\).
     \end{theorem}
 
     \paragraph*{Equational reasoning.}
@@ -240,9 +241,9 @@
     A common use of equational reasoning is to take a circuit and reduce it to its stream of output values.
 
     \begin{definition}[Productivity]
-        For a set of equations \(\mathcal{E}\), a closed sequential circuit \iltikzfig{circuits/components/fcirc-closed-traced} is called \emph{productive under} \(\mathcal{E}\) if there exist values \iltikzfig{circuits/components/values/vs} and sequential circuit \iltikzfig{circuits/components/gcirc-closed-traced} such that
+        For a set of equations \(\mathcal{E}\), a closed sequential circuit \iltikzfig{circuits/components/circuits/f-seq-closed} is called \emph{productive under} \(\mathcal{E}\) if there exist values \iltikzfig{circuits/components/values/vs-n} and sequential circuit \iltikzfig{circuits/components/circuits/g-seq-closed} such that
         \(
-            \iltikzfig{circuits/components/fcirc-closed-traced} 
+            \iltikzfig{circuits/components/circuits/f-seq-closed} 
             \eqaxioms{\mathcal{E}}
             \iltikzfig{circuits/productivity/productive}
         \).
@@ -255,11 +256,11 @@
     To tackle this, we use \emph{Kleene's fixpoint theorem}: since all the gates in an interpretation are monotone, they have a least fixpoint; since our lattice is finite, we are able to compute it after a finite number of iterations.
 
     \begin{definition}
-        For a combinational circuit 
+        For a combinational circuit
         \(\iltikzfig{circuits/instant-feedback/fixpoint-lhs}\)
         , let its \emph{\(n\)th iteration} 
         \(\iltikzfig{circuits/instant-feedback/fn-box}\) 
-        be defined inductively as 
+        be defined inductively as
         \(
             \iltikzfig{circuits/instant-feedback/f0-box} 
             := 
@@ -431,9 +432,9 @@
     \end{theorem}
 
     \noindent
-    This allows us to reason \emph{purely equationally} with digital circuits, rather than having to appeal to the potentially inefficient stream semantics.
+    This allows us to reason \emph{purely equationally} with digital circuits, instead of appealing to the potentially inefficient stream semantics.
     Even so, this does not immediately yield an \emph{automatic} rewriting framework, as computationally it is difficult to handle the trace.
-    A suitable strategy for tackling this problem was presented in~\cite{ghica2017diagrammatic} using graph rewriting on \emph{framed point graphs}; a current thread of work involves reworking this using recent work on rewriting with \emph{hypergraphs}~\cite{bonchi2016rewriting,kaye2021rewriting}.
+    A suitable strategy for tackling this problem was presented in~\cite{ghica2017diagrammatic} using graph rewriting on \emph{framed point graphs}; a current thread of work is reworking this using recent work on rewriting with \emph{hypergraphs}~\cite{bonchi2016rewriting,kaye2021rewriting}.
 
     \printbibliography[heading=bibintoc,title={References}]
 
