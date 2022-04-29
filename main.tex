@@ -54,12 +54,12 @@
     Before we can start constructing circuits, we must specify the components we can use.
 
     \begin{definition}[Circuit signature]
-        Let \(\Sigma\) be a tuple \((\mathcal{V},\bullet,\circ,\mathcal{G})\) where \(\mathcal{V}\) is a finite set of \emph{values} with distinguished elements \(\bullet,\circ \in \mathcal{V}\), and \(\mathcal{G}\) is a finite set of tuples \((g,m)\) where \(g\) is a \emph{gate symbol} and \(m \in \nat\) is its \emph{arity}.
+        Let \(\Sigma\) be a tuple \((\mathcal{V},\disconnected,\shortcircuit,\mathcal{G})\) where \(\mathcal{V}\) is a finite set of \emph{values} with distinguished elements \(\disconnected,\shortcircuit \in \mathcal{V}\), and \(\mathcal{G}\) is a finite set of tuples \((g,m)\) where \(g\) is a \emph{gate symbol} and \(m \in \nat\) is its \emph{arity}.
     \end{definition}
 
     \noindent
     The distinct elements \(\bullet\) and \(\circ\) represent a \emph{disconnected wire} (a \emph{lack} of information) and a \emph{short circuit} (a \emph{glut} of information) respectively.
-    Using a signature, we can construct digital circuits as morphisms in a freely generated symmetric traced monoidal category.
+    Using a signature, digital circuits are constructed as morphisms in a freely generated symmetric traced monoidal category (STMC).
     To aid in the presentation, we shall use the graphical calculus of \emph{string diagrams}~\cite{joyal1991geometry,joyal1996traced,selinger2011survey}.
 
     \begin{definition}[Sequential circuits]
@@ -83,8 +83,9 @@
     The small boxes are \emph{values}: these represent the signals that can flow through our circuits.
     Next come the generators for each gate symbol in our signature, and three \emph{structural} generators for forking, joining and stubbing wires.
     The final generator is a \emph{delay} generator: one can think of this as delaying its inputs for one tick of the clock.
-    We write arbitrary sequential circuits obtained by composing generators together as squares \iltikzfig{circuits/components/circuits/f-seq}.
-    If a circuit is \emph{combinational}, i.e. it contains no delay or trace, it is drawn in a lighter square \iltikzfig{circuits/components/circuits/f-comb}.
+    We write arbitrary sequential circuits obtained by composing generators together as green squares \iltikzfig{circuits/components/circuits/f-seq}.
+    If a circuit is \emph{combinational}, i.e. it contains no delay or trace, it is drawn in a lighter blue square \iltikzfig{circuits/components/circuits/f-comb}.
+    When restricted to the combinational circuits, this work is similar to~\cite{lafont2003algebraic}: where the approaches diverge is the inclusion of delay and feedback.
 
     \paragraph*{Semantics.}
 
@@ -93,7 +94,7 @@
 
     \begin{definition}[Interpretation]\label{def:interpretation}
         Let \(\circuitsignature = (\circuitsignaturevalues,\circuitsignaturegates)\) be a circuit signature.
-        A interpretation of \(\circuitsignature\) is a tuple \(\interpretation = (\mathbf{V}, \valueinterpretation,\gateinterpretation)\) where \(\values\) is a finite lattice, \(\valueinterpretation\) is a bijective function \(\valueinterpretation \setminus \{\bot,\top\} \to \values \setminus \{\top,\bot\}\), and \(\gateinterpretation\) is a map from each gate \((g,m) \in \circuitsignaturegates\) to a monotone function \(\morph{\overline{g}}{\valuetuple{m}}{\values}\).
+        A interpretation of \(\circuitsignature\) is a tuple \(\interpretation = (\mathbf{V}, \valueinterpretation,\gateinterpretation)\) where \(\values\) is a finite lattice, \(\valueinterpretation\) is a bijective function \(\valueinterpretation \setminus \{\disconnected,\shortcircuit\} \to \values \setminus \{\top,\bot\}\), and \(\gateinterpretation\) is a map from each gate \((g,m) \in \circuitsignaturegates\) to a monotone function \(\morph{\overline{g}}{\valuetuple{m}}{\values}\).
     \end{definition}
 
     \begin{figure}[p]
@@ -139,10 +140,10 @@
     \end{figure}
 
     \begin{example}\label{ex:interp}
-        Let \(\Sigma_\star = (\{\bot,\valuetrue,\valuefalse,\top\}, \bot, \top, \{\text{AND},\text{OR},\text{NOT}\}\)) be a signature.
-        The corresponding generators for values are \(\iltikzfig{strings/structure/monoid/init}, \iltikzfig{circuits/components/values/true}, \iltikzfig{circuits/components/values/false}\) and \(\iltikzfig{strings/structure/monoid/init-white}\); and the gates \(\iltikzfig{circuits/components/gates/and}, \iltikzfig{circuits/components/gates/or}\) and \(\iltikzfig{circuits/components/gates/not}\).
-        The values can be interpreted in the four value lattice \(\mathbf{V}_\star = \{\bot, 0, 1, \top\}\), where the join \(0 \ljoin 1 = \top\) and the meet \(0 \lmeet 1 = \bot\).
-        Gates can be interpreted using Belnap logic~\cite{belnap1977useful}: the truth tables are listed in Figure~\ref{tab:truths}.
+        Let \(\Sigma_\star = (\{\disconnected,\valuetrue,\valuefalse,\shortcircuit\}, \disconnected, \shortcircuit, \{(\text{AND},2),(\text{OR},2),(\text{NOT},1)\}\)) be a signature.
+        In \(\scirc{\Sigma_\star}\), the values are \(\iltikzfig{strings/structure/monoid/init}, \iltikzfig{circuits/components/values/true}, \iltikzfig{circuits/components/values/false}\) and \(\iltikzfig{strings/structure/monoid/init-white}\); the gates are \(\iltikzfig{circuits/components/gates/and}, \iltikzfig{circuits/components/gates/or}\) and \(\iltikzfig{circuits/components/gates/not}\).
+        Let \(\values_\star\) be the lattice \((\{\bot, 0, 1, \top\},\sqsubseteq)\), with the join defined as \(0 \ljoin 1 = \top\) and the meet defined as \(0 \lmeet 1 = \bot\).
+        Let \(\{\wedge,\vee,\neg\}\) be the \emph{Belnap logic} operators~\cite{belnap1977useful}: the truth tables are listed in \cref{tab:truths}.
         Let \(\interpretation_\star = (\mathbf{V}_\star, \{\mathsf{f} \mapsto 0, \mathsf{t} \mapsto 1\}, \{\text{AND} \mapsto \land, \text{OR} \mapsto \lor, \text{NOT} \mapsto \neg\})\).
     \end{example}
 
@@ -174,10 +175,10 @@
 
     \paragraph*{Equational reasoning.}
 
-    Circuits of different structure can have the same semantics.
+    Circuits of different structure can have the same semantics as stream functions.
     However, in general it is prohibitive to check that the corresponding streams for two circuits are equal~\cite{ghica2017diagrammatica}: it is more efficient to reason \emph{equationally}.
     Equations are identities that hold in the quotient category \(\scircsigmai\).
-    Given a set of equations \(\mathcal{E}\), we write \(\iltikzfig{circuits/components/circuits/f-seq} \eqaxioms{\mathcal{E}} \iltikzfig{circuits/components/circuits/g-seq}\) if \iltikzfig{circuits/components/circuits/f-seq} can be rewritten to \iltikzfig{circuits/components/circuits/g-seq} by equations in \(\mathcal{E}\).
+    Given a set of equations \(\mathcal{E}\), we write \(\iltikzfig{circuits/components/circuits/f-seq} \eqaxioms{\mathcal{E}} \iltikzfig{circuits/components/circuits/g-seq}\) if \iltikzfig{circuits/components/circuits/f-seq} can be rewritten to \iltikzfig{circuits/components/circuits/g-seq} by applying equations in \(\mathcal{E}\).
     Note that since we are using string diagrams, the axioms of STMCs are `absorbed' into the notation and always hold by moving wires and boxes around.
 
     \begin{figure}[p]
@@ -239,7 +240,7 @@
     A set of equations was presented in~\cite{ghica2016categorical}.
     However, they were not \emph{complete}: these axioms could not necessarily handle circuits with \emph{non-delay-guarded feedback}, in which every feedback loop does not pass through a delay generator.
     While in some circuits `instant feedback' is useful~\cite{riedel2004cyclic,mendler2012constructive}, in other cases it can result in an unproductive circuit.
-    To tackle this, we take inspiration from \emph{Kleene's fixpoint theorem}: since all the gates in an interpretation are monotonic, they have a least fixpoint; since our lattice is finite, we are able to compute it after a finite number of iterations.
+    To tackle this, we take inspiration from \emph{Kleene's fixpoint theorem}: since all the gates in an interpretation are monotone, they have a least fixpoint; since our lattice is finite, we are able to compute it after a finite number of iterations.
 
     \begin{definition}
     
@@ -267,7 +268,7 @@
     \end{definition}
 
     \noindent
-    The complete set of equations \(\mathcal{C}\) for closed circuits is shown in \cref{fig:closed-circuit-axioms}.
+    The complete set of equations \(\mathcal{C}\) for closed circuits under \emph{any} interpretation is shown in \cref{fig:closed-circuit-axioms}.
 
     \begin{theorem}
         Any closed sequential circuit \iltikzfig{circuits/components/circuits/f-seq-closed} is productive under \(\mathcal{C}\).
@@ -282,7 +283,7 @@
     In the closed case these equations suffice as the input values are propagated across the circuit, with gates evaluated one by one.
     However, when faced with an \emph{open circuit} the equations in \(\mathcal{C}\) are not sufficient.
     For example, consider the circuits \iltikzfig{circuits/examples/demorgan-lhs} and
-    \iltikzfig{circuits/examples/demorgan-rhs}: when interpreted under \(\interpretation_\star\) they have the same stream function by applying de Morgan's law.
+    \iltikzfig{circuits/examples/demorgan-rhs}: when interpreted under \(\interpretation_\star\) their stream functions are equal by applying de Morgan's law.
     To tackle this we must consider additional equivalences between \emph{combinational circuits}.
 
     All circuits will include the generators for the fork, join, stub and disconnected wire.
@@ -418,10 +419,9 @@
     \end{theorem}
 
     \noindent
-    This allows us to reason \emph{purely equationally} with digital circuits, rather than having to appeal to te
-    An initial , and is still current work.
-
-
+    This allows us to reason \emph{purely equationally} with digital circuits, rather than having to appeal to the potentially inefficient stream semantics.
+    Even so, this does not immediately yield an \emph{automatic} rewriting framework: as computationally it is difficult to handle the trace.
+    A suitable strategy for tackling this problem was presented in~\cite{ghica2017diagrammatic} using graph rewriting on \emph{framed point graphs}~\cite{ghica2017diagrammatic}; a current thread of work involves reworking this using recent work on rewriting with \emph{hypergraphs}~\cite{bonchi2016rewriting}.
 
     \printbibliography[heading=bibintoc,title={References}]
 
