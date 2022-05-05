@@ -278,7 +278,7 @@
         \(\iltikzfig{circuits/instant-feedback/fixpoint}\)
         , is defined as \(\iltikzfig{circuits/instant-feedback/fc-box}\).
     \end{definition}
-
+    
     \noindent
     The complete set of equations \(\mathcal{C}\) for closed circuits under \emph{any} interpretation is shown in \cref{fig:closed-circuit-axioms}.
     An important consequence of these is that the \emph{unfolding} rule for circuits with feedback can be derived, illustrated in \cref{fig:unfolding}.
@@ -304,7 +304,7 @@
     All that remains is to add equations for equivalences between gates
 
     \begin{definition}
-        We say that a set of equations \(\mathcal{E}\), where each \(e \in \mathcal{E}\) contains at least one gate, is \emph{combinationally complete} for an interpretation \(\interpretation\) if for all combinational circuits \(\iltikzfig{circuits/components/circuits/f-comb}\) and \(\iltikzfig{circuits/components/circuits/g-comb}\), if \(\circuittostream[\iltikzfig{circuits/components/circuits/f-comb}]{\interpretation} = \circuittostream[\iltikzfig{circuits/components/circuits/g-comb}]{\interpretation}\) then there exists a sequence of equations in \(\mathcal{E}\) such that \(\circuittostream[\iltikzfig{circuits/components/circuits/f-comb}]{\interpretation} \eqaxioms{\mathcal{E}}\circuittostream[\iltikzfig{circuits/components/circuits/g-comb}]{\interpretation}\).
+        We say that a set of equations \(\mathcal{E}\), where each \(e \in \mathcal{E}\) contains at least one gate, is \emph{combinationally complete} for an interpretation \(\interpretation\) if for all combinational circuits \(\iltikzfig{circuits/components/circuits/f-comb}\) and \(\iltikzfig{circuits/components/circuits/g-comb}\), if \(\circuittostream[\iltikzfig{circuits/components/circuits/f-comb}]{\interpretation} = \circuittostream[\iltikzfig{circuits/components/circuits/g-comb}]{\interpretation}\) then  \(\iltikzfig{circuits/components/circuits/f-comb} \eqaxioms{\mathcal{E}}\iltikzfig{circuits/components/circuits/g-comb}\).
     \end{definition}
 
     \begin{example}
