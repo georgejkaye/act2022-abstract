@@ -58,7 +58,7 @@
     \end{definition}
 
     \noindent
-    The distinct elements \(\bullet\) and \(\circ\) represent a \emph{disconnected wire} (a \emph{lack} of information) and a \emph{short circuit} (\emph{inconsistent} information) respectively.
+    The distinct elements \(\bullet\) and \(\circ\) represent a \emph{disconnected wire} (a \emph{lack} of information) and a \emph{short circuit} (\emph{inconsistent} information) respectively: the latter can be thought of as `true and false simultaneously'.
     Using a signature, digital circuits are constructed as morphisms in a freely generated symmetric traced monoidal category (STMC).
     To aid in the presentation, we shall use the graphical calculus of \emph{string diagrams}~\cite{joyal1991geometry,joyal1996traced,selinger2011survey}.
 
@@ -81,10 +81,11 @@
 
     \noindent
     The small boxes are \emph{values}: these represent the signals that can flow through our circuits.
-    Next come the generators for each gate symbol in our signature, and three \emph{structural} generators for forking, joining and stubbing wires.
-    The final generator is a \emph{delay} generator: one can think of this as delaying its inputs for one tick of the clock.
-    We write arbitrary sequential circuits obtained by composing generators together as green squares \iltikzfig{circuits/components/circuits/f-seq}.
+    Next come the generators for each gate symbol in our signature, and \emph{structural} generators for forking, joining and stubbing wires.
+    The final generator is a \emph{delay} generator: one can think of this as delaying its inputs for one tick.
+    We write sequential circuits obtained by composing generators as green squares \iltikzfig{circuits/components/circuits/f-seq}.
     If a circuit is \emph{combinational}, i.e. it contains no delay or trace, it is drawn in a lighter blue square \iltikzfig{circuits/components/circuits/f-comb}.
+    To avoid clutter, we occasionally omit the backgrounds of generators.
     When restricted to the combinational circuits, this work is similar to~\cite{lafont2003algebraic}.
     Where the approaches diverge is the inclusion of delay and feedback.
 
@@ -95,7 +96,7 @@
 
     \begin{definition}[Interpretation]\label{def:interpretation}
         Let \(\circuitsignature = (\circuitsignaturevalues,\circuitsignaturegates)\) be a signature.
-        A interpretation of \(\circuitsignature\) is a tuple \(\interpretation = (\mathbf{V}, \valueinterpretation,\gateinterpretation)\) where \(\values\) is a finite lattice, \(\valueinterpretation\) is a bijective function \(\valueinterpretation \setminus \{\disconnected,\shortcircuit\} \to \values \setminus \{\top,\bot\}\), and \(\gateinterpretation\) is a map from each \((g,m) \in \circuitsignaturegates\) to a monotone function \(\morph{\overline{g}}{\valuetuple{m}}{\values}\).
+        A interpretation of \(\circuitsignature\) is a tuple \(\interpretation = (\mathbf{V}, \valueinterpretation,\gateinterpretation)\) where \(\values\) is a finite lattice, \(\valueinterpretation\) is a bijective function \(\circuitsignaturevalues \setminus \{\disconnected,\shortcircuit\} \to \values \setminus \{\top,\bot\}\), and \(\gateinterpretation\) is a map from each \((g,m) \in \circuitsignaturegates\) to a monotone function \(\morph{\overline{g}}{\valuetuple{m}}{\values}\).
     \end{definition}
 
     \begin{figure}[p]
