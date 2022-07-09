@@ -36,6 +36,7 @@
 
 \title{\vspace{-3em}Fully abstract categorical semantics for digital circuits\\\textbf{Extended abstract}}
 \author{\textbf{George Kaye}, David Sprunger and Dan R. Ghica}
+\date{July 20, 2022}
 
 \begin{document}
     \maketitle
@@ -47,7 +48,7 @@
     When provided with inputs, the goal of such a system is to apply reductions and derive an output value.
 
     Such an equational system was first presented in~\cite{ghica2016categorical,ghica2017diagrammatic}, in which digital circuits with delay and (instant) feedback are modelled as morphisms in a freely generated traced cartesian category, or \emph{dataflow category}~\cite{cazanescu1994feedback,hasegawa1997recursion}.
-    However, the presentation was informal and, crucially, not complete, and could not reduce all circuits to a stream of values.
+    However, the presentation was informal and, crucially, not complete: not all circuits could be reduced to a stream of values.
     Our work brings this project to its conclusion, formalising the categorical semantics and completing the set of equations.
 
     \paragraph*{Syntax.}
@@ -58,8 +59,8 @@
     \end{definition}
 
     \noindent
-    The distinct elements \(\bullet\) and \(\circ\) represent a \emph{disconnected wire} (a \emph{lack} of information) and a \emph{short circuit} (\emph{inconsistent} information) respectively: the latter can be thought of as `true and false simultaneously'.
-    Using a signature, digital circuits are constructed as morphisms in a freely generated symmetric traced monoidal category (STMC).
+    The distinct elements \(\bullet\) and \(\circ\) represent a \emph{disconnected wire} (a \emph{lack} of information) and a \emph{short circuit} (\emph{inconsistent} information) respectively.
+    Digital circuits are constructed as morphisms in a freely generated symmetric traced monoidal category (STMC).
     To aid in the presentation, we shall use the graphical calculus of \emph{string diagrams}~\cite{joyal1991geometry,joyal1996traced,selinger2011survey}.
 
     \begin{definition}[Sequential circuits]
@@ -80,14 +81,9 @@
     \end{definition}    
 
     \noindent
-    The small boxes are \emph{values}: these represent the signals that can flow through our circuits.
-    Next come the generators for each gate symbol in our signature, and \emph{structural} generators for forking, joining and stubbing wires.
-    The final generator is a \emph{delay} generator: one can think of this as delaying its inputs for one tick.
-    We write sequential circuits obtained by composing generators as green squares \iltikzfig{circuits/components/circuits/f-seq}.
-    If a circuit is \emph{combinational}, i.e. it contains no delay or trace, it is drawn in a lighter blue square \iltikzfig{circuits/components/circuits/f-comb}.
-    To avoid clutter, we occasionally omit the backgrounds of generators.
-    When restricted to the combinational circuits, this work is similar to~\cite{lafont2003algebraic}.
-    Where the approaches diverge is the inclusion of delay and feedback.
+    In turn each generator represents: \emph{values} that flow through wires; \emph{gates}; constructs for forking, joining and stubbing wires; and finally a generator for \emph{delay}.
+    Circuits obtained by composing generators are drawn as dark green squares \iltikzfig{circuits/components/circuits/f-seq}; circuits containing only gates and structural generators are drawn in a lighter blue square \iltikzfig{circuits/components/circuits/f-comb}.
+    To avoid clutter, we occasionally omit the backgrounds of concrete generators in large diagrams.
 
     \paragraph*{Semantics.}
 
@@ -95,8 +91,7 @@
     To add \emph{semantics} to circuits, first the signature must be interpreted in some domain.
 
     \begin{definition}[Interpretation]\label{def:interpretation}
-        Let \(\circuitsignature = (\circuitsignaturevalues,\circuitsignaturegates)\) be a signature.
-        A interpretation of \(\circuitsignature\) is a tuple \(\interpretation = (\mathbf{V}, \valueinterpretation,\gateinterpretation)\) where \(\values\) is a finite lattice, \(\valueinterpretation\) is a bijective function \(\circuitsignaturevalues \setminus \{\disconnected,\shortcircuit\} \to \values \setminus \{\top,\bot\}\), and \(\gateinterpretation\) is a map from each \((g,m) \in \circuitsignaturegates\) to a monotone function \(\morph{\overline{g}}{\valuetuple{m}}{\values}\).
+        An interpretation of \(\circuitsignature = (\circuitsignaturevalues,\bullet,\circ,\circuitsignaturegates)\) is a tuple \(\interpretation = (\mathbf{V}, \valueinterpretation,\gateinterpretation)\) where \((\values,\sqsubseteq, \bot,\top)\) is a finite lattice, \(\valueinterpretation\) is a function \(\circuitsignaturevalues \setminus \{\disconnected,\shortcircuit\} \to \values \setminus \{\bot,\top\}\), and \(\gateinterpretation\) is a map from each \((g,m) \in \circuitsignaturegates\) to a monotone function \(\morph{\overline{g}}{\valuetuple{m}}{\values}\) such that \(\overline{g}(\bot^m) = \bot\) and \(\overline{g}(\mathbf{v})\) is in the image of \(\valueinterpretation\) for all \(\mathbf{v} \in \valuetuple{m}\).
     \end{definition}
 
     \begin{figure}[p]
@@ -153,9 +148,15 @@
     The semantics of circuits is that of \emph{stream functions}, which take as input a stream and output a stream.
     In particular, we are interested in stream functions of the form \(\valuetuplestream{m} \to \valuetuplestream{n}\).
 
+    \begin{example}
+        For a value \(v \in \circuitsignaturevalues\), the stream function \(\morph{\valstream{v}}{\stream{(\valuetuple{0})}}{\stream{\values}}\) is defined as \(\valstream{v}(\bullet)(0) := \valueinterpretation(v), \valstream{v}(\bullet)(i+1) := \bot\). 
+        For a gate \((g,m) \in \circuitsignaturegates\), the stream function \(\morph{\gatestream{g}}{\stream{(\valuetuple{m})}}{\stream{\values}}\) is defined as \(\gatestream{g}(\sigma)(i) := \gateinterpretation(g)(\sigma(i))\).
+        Finally, the \emph{shift} stream function \(\morph{\delta}{\stream{\values}}{\stream{\values}}\) is defined as \(\delta(\sigma)(0) := \bot, \delta(\sigma)(i+1) := \sigma(i)\).
+    \end{example}
+    
     \begin{definition}
-        For an interpretation \(\interpretation = (\values, \valueinterpretation, \gateinterpretation)\), let \(\streami\) be the prop with morphisms \(m \to n\) as stream functions \(\valuetuplestream{m} \to \valuetuplestream{n}\) freely generated over
-        stream functions for values \(\morph{\tilde{v}}{0}{1}\) for each \(v \in \values\), defined as \(\tilde{v}(0) = v\) and \(\tilde{v}(i) = \bot\); for gates \(\morph{\tilde{g}}{m}{1}\) for each \((g,m) \in \circuitsignaturegates\) defined as \(\tilde{g}(\sigma)(i) = g(\sigma(i))\); and for delay \(\morph{\delay}{1}{1}\) defined as \(\delay(\sigma)(0) = \bot\) and \(\delay(\sigma)(i+1)\).
+        For a signature \(\circuitsignature = (\circuitsignaturevalues,\bullet,\circ,\circuitsignaturegates)\) and its interpretation \(\interpretation = (\values, \valueinterpretation, \gateinterpretation)\), let \(\streami\) be the prop freely generated over \(\valstream{v}\) for each \(v \in \circuitsignaturevalues\), \(\gatestream{g}\) for each \((g,m) \in \circuitsignaturegates\), and the shift stream \(\delta\).
+        Composition and tensor are by function composition and cartesian product; the symmetry swaps input streams.
     \end{definition}
 
     \begin{theorem}
@@ -178,51 +179,55 @@
     \paragraph*{Equational reasoning.}
 
     Circuits of non-equal syntax can have the same semantics as stream functions.
-    However, in general it is prohibitive to check that the corresponding streams for two circuits are equal~\cite{ghica2017diagrammatica}: it is more efficient to reason \emph{equationally}.
-    Equations are identities that hold in the quotient category \(\scircsigmai\).
-    Given a set of equations \(\mathcal{E}\), we write \(\iltikzfig{circuits/components/circuits/f-seq} \eqaxioms{\mathcal{E}} \iltikzfig{circuits/components/circuits/g-seq}\) if \iltikzfig{circuits/components/circuits/f-seq} can be rewritten to \iltikzfig{circuits/components/circuits/g-seq} by applying equations in \(\mathcal{E}\).
+    However, in general it is prohibitive to check that the corresponding streams for two circuits are equal: it is more efficient to reason \emph{equationally}.
+    Equations are identities that hold in the quotient category \(\scircsigmai\): we write \(\iltikzfig{circuits/components/circuits/f-seq} \eqaxioms{} \iltikzfig{circuits/components/circuits/g-seq}\) if \(\iltikzfig{circuits/components/circuits/f-seq}\) is equal to \(\iltikzfig{circuits/components/circuits/g-seq}\) under the equational theory.
     Note that since we are using string diagrams, the axioms of STMCs are `absorbed' into the notation and always hold by moving wires and boxes around.
 
     \begin{figure}[p]
         \centering
         \begin{align*}
             \iltikzfig{circuits/axioms/join-lhs}
-            &\eqaxiomsc
+            &\eqaxioms{}
             \iltikzfig{circuits/axioms/join-rhs}
             &
             \iltikzfig{circuits/axioms/gate-lhs}
-            &\eqaxiomsc
+            &\eqaxioms{}
             \iltikzfig{circuits/axioms/gate-rhs}
             &
             \iltikzfig{strings/structure/comonoid/unitality-l-lhs}
-            &\eqaxiomsc
+            &\eqaxioms{}
             \iltikzfig{strings/structure/comonoid/unitality-l-rhs}
-            \eqaxiomsc
+            \eqaxioms{}
             \iltikzfig{strings/structure/comonoid/unitality-r-lhs}
             &
+            \iltikzfig{strings/structure/monoid/unitality-l-lhs}
+            &\eqaxioms{}
+            \iltikzfig{strings/structure/monoid/unitality-l-rhs}
+            \eqaxioms{}
+            \iltikzfig{strings/structure/monoid/unitality-r-lhs}
+            &
             \iltikzfig{circuits/axioms/disconnect-lhs}
-            &\eqaxiomsc
+            &\eqaxioms{}
             \iltikzfig{circuits/axioms/disconnect-rhs} 
-            &
-            \iltikzfig{strings/cartesian/naturality-discard-lhs}
-            &\eqaxiomsc
-            \iltikzfig{strings/cartesian/naturality-discard-rhs}
-            &
         \end{align*}
         \begin{align*}
+            \iltikzfig{strings/cartesian/naturality-discard-lhs}
+            &\eqaxioms{}
+            \iltikzfig{strings/cartesian/naturality-discard-rhs}
+            &
             \iltikzfig{strings/cartesian/naturality-copy-lhs}
-            &\eqaxiomsc
+            &\eqaxioms{}
             \iltikzfig{strings/cartesian/naturality-copy-rhs}
             &
             \iltikzfig{circuits/axioms/streaming-lhs}
-            &\eqaxiomsc
+            &\eqaxioms{}
             \iltikzfig{circuits/axioms/streaming-rhs} 
             &
             \iltikzfig{circuits/instant-feedback/axiom-lhs}
-            &\eqaxiomsc
+            &\eqaxioms{}
             \iltikzfig{circuits/instant-feedback/axiom-rhs}
         \end{align*}
-        \caption{The set of equations \(\mathcal{C}\) for reducing closed circuits.}
+        \caption{Equations for reducing closed circuits.}
         \label{fig:closed-circuit-axioms}
     \end{figure}
 
@@ -234,7 +239,7 @@
             = \iltikzfig{circuits/examples/reasoning/unfolding/unfolding-2}
             = \iltikzfig{circuits/examples/reasoning/unfolding/unfolding-3}
         \end{align*}
-        \caption{Deriving the \emph{unfolding} rule using equations in \(\mathcal{C}\).}
+        \caption{Deriving the \emph{unfolding} rule.}
         \label{fig:unfolding}
     \end{figure}
 
@@ -254,7 +259,7 @@
     A set of equations was presented in~\cite{ghica2016categorical}.
     However, they were not \emph{complete}: these axioms could not necessarily handle circuits with \emph{non-delay-guarded feedback}, in which every feedback loop does not pass through a delay generator.
     While in some circuits `instant feedback' is useful~\cite{riedel2004cyclic,mendler2012constructive}, in other cases it can result in an unproductive circuit.
-    To tackle this, we use \emph{Kleene's fixpoint theorem}: since all the gates in an interpretation are monotone, they have a least fixpoint; since our lattice is finite, we are able to compute it after a finite number of iterations.
+    To tackle this, we use the \emph{Kleene fixpoint theorem}: since all the gates in an interpretation are monotone, they have a least fixpoint; since our lattice is finite, we are able to compute it after a finite number of iterations.
 
     \begin{definition}
         For a combinational circuit
@@ -294,57 +299,48 @@
 
     \paragraph*{Full abstraction.}
 
-    In the closed case these equations suffice as the input values are propagated across the circuit, with gates evaluated one by one.
-    However, when faced with an \emph{open circuit} the equations in \(\mathcal{C}\) are not sufficient.
-    For example, consider the circuits \iltikzfig{circuits/examples/demorgan-lhs} and
-    \iltikzfig{circuits/examples/demorgan-rhs}: when interpreted under \(\interpretation_\star\) their stream functions are equal by applying de Morgan's law.
-    To tackle this we must consider additional equivalences between \emph{combinational circuits}.
+    In the closed case these equations suffice, but when faced with an \emph{open circuit} we must devise another equation.
+    To do this, we view circuits as \emph{state transition machines}: recall that a circuit \(\iltikzfig{circuits/components/circuits/f-seq}\) is in \emph{global delay form} if it is in the form \(\iltikzfig{circuits/full-abstraction/global-delay-f}\).
+    We call the circuit \(\iltikzfig{circuits/components/circuits/f-pre-trace}\) a \emph{combinational core} of \(\iltikzfig{circuits/components/circuits/f-seq}\): this circuit produces its \emph{state transition} and its \emph{output}.
+    To equate circuits with the same behaviour we essentially construct a bisimulation between these state machines.
 
-    All circuits will include the generators for the fork, join, stub and disconnected wire.
-    Under any interpretation, these four generators form a \emph{bialgebra}, so we can add the corresponding axioms listed in to our framework, listed in \cref{fig:bialgebra-axioms} .
-    All that remains is to add equations for equivalences between gates
-
-    \begin{definition}
-        We say that a set of equations \(\mathcal{E}\), where each \(e \in \mathcal{E}\) contains at least one gate, is \emph{combinationally complete} for an interpretation \(\interpretation\) if for all combinational circuits \(\iltikzfig{circuits/components/circuits/f-comb}\) and \(\iltikzfig{circuits/components/circuits/g-comb}\), if \(\circuittostream[\iltikzfig{circuits/components/circuits/f-comb}]{\interpretation} = \circuittostream[\iltikzfig{circuits/components/circuits/g-comb}]{\interpretation}\) then  \(\iltikzfig{circuits/components/circuits/f-comb} \eqaxioms{\mathcal{E}}\iltikzfig{circuits/components/circuits/g-comb}\).
-    \end{definition}
-
-    \begin{example}
-        A set of equations combinationally complete for \(\interpretation_\star\) are listed in \cref{fig:combinational-axioms}.
-    \end{example}
+    \begin{proposition}
+        Let \(\iltikzfig{circuits/components/circuits/f-seq}\) and \(\iltikzfig{circuits/components/circuits/f-seq}\) be sequential circuits. Then, if their combinational cores produce the same outputs for all accessible states, then \(\iltikzfig{circuits/components/circuits/f-seq} \eqaxioms{} \iltikzfig{circuits/components/circuits/f-seq}\)
+    \end{proposition}
 
     \begin{figure}[p]
         \centering
         \begin{align*}
-            \iltikzfig{strings/structure/comonoid/unitality-l-lhs} &\eqaxioms{\mathcal{B}}
+            \iltikzfig{strings/structure/comonoid/unitality-l-lhs} &\eqaxioms{}
             \iltikzfig{strings/structure/comonoid/unitality-l-rhs} &
-            \iltikzfig{strings/structure/comonoid/unitality-r-lhs} &\eqaxioms{\mathcal{B}}
+            \iltikzfig{strings/structure/comonoid/unitality-r-lhs} &\eqaxioms{}
             \iltikzfig{strings/structure/comonoid/unitality-r-rhs} &
-            \iltikzfig{strings/structure/comonoid/associativity-lhs} &\eqaxioms{\mathcal{B}}
+            \iltikzfig{strings/structure/comonoid/associativity-lhs} &\eqaxioms{}
             \iltikzfig{strings/structure/comonoid/associativity-rhs} &
-            \iltikzfig{strings/structure/comonoid/commutativity-lhs} &\eqaxioms{\mathcal{B}}
+            \iltikzfig{strings/structure/comonoid/commutativity-lhs} &\eqaxioms{}
             \iltikzfig{strings/structure/comonoid/commutativity-rhs}
         \end{align*}
         \begin{align*}
-            \iltikzfig{strings/structure/monoid/unitality-l-lhs} &\eqaxioms{\mathcal{B}}
+            \iltikzfig{strings/structure/monoid/unitality-l-lhs} &\eqaxioms{}
             \iltikzfig{strings/structure/monoid/unitality-l-rhs} &
-            \iltikzfig{strings/structure/monoid/unitality-r-lhs} &\eqaxioms{\mathcal{B}}
+            \iltikzfig{strings/structure/monoid/unitality-r-lhs} &\eqaxioms{}
             \iltikzfig{strings/structure/monoid/unitality-r-rhs} &
-            \iltikzfig{strings/structure/monoid/associativity-lhs} &\eqaxioms{\mathcal{B}}
+            \iltikzfig{strings/structure/monoid/associativity-lhs} &\eqaxioms{}
             \iltikzfig{strings/structure/monoid/associativity-rhs} &
-            \iltikzfig{strings/structure/monoid/commutativity-lhs} &\eqaxioms{\mathcal{B}}
+            \iltikzfig{strings/structure/monoid/commutativity-lhs} &\eqaxioms{}
             \iltikzfig{strings/structure/monoid/commutativity-rhs}
         \end{align*}
         \begin{align*}
-            \iltikzfig{strings/structure/bialgebra/copy-merge-lhs} &\eqaxioms{\mathcal{B}}
+            \iltikzfig{strings/structure/bialgebra/copy-merge-lhs} &\eqaxioms{}
             \iltikzfig{strings/structure/bialgebra/copy-merge-rhs} &
-            \iltikzfig{strings/structure/bialgebra/merge-copy-lhs} &\eqaxioms{\mathcal{B}}
+            \iltikzfig{strings/structure/bialgebra/merge-copy-lhs} &\eqaxioms{}
             \iltikzfig{strings/structure/bialgebra/merge-copy-rhs} &
-            \iltikzfig{strings/structure/bialgebra/init-copy-lhs} &\eqaxioms{\mathcal{B}}
+            \iltikzfig{strings/structure/bialgebra/init-copy-lhs} &\eqaxioms{}
             \iltikzfig{strings/structure/bialgebra/init-copy-rhs} &
-            \iltikzfig{strings/structure/bialgebra/merge-discard-lhs} &\eqaxioms{\mathcal{B}}
+            \iltikzfig{strings/structure/bialgebra/merge-discard-lhs} &\eqaxioms{}
             \iltikzfig{strings/structure/bialgebra/merge-discard-rhs}
        \end{align*}
-        \caption{Set \(\mathcal{B}\) of \emph{bialgebra} equations.}
+        \caption{The equations of a \emph{bialgebra}, derivable using the `Mealy equation'}
         \label{fig:bialgebra-axioms}
     \end{figure}
 
@@ -352,84 +348,87 @@
         \centering
         \begin{align*}
             \iltikzfig{circuits/axioms/belnap/or-associativity-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/or-associativity-rhs}
             &
             \iltikzfig{circuits/axioms/belnap/and-associativity-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/and-associativity-rhs}
             &
             \iltikzfig{circuits/axioms/belnap/or-commutativity-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/or-commutativity-rhs}
             &
             \iltikzfig{circuits/axioms/belnap/and-commutativity-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/and-commutativity-rhs}
         \end{align*}
         \begin{align*}
             \iltikzfig{circuits/axioms/belnap/or-identity-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/or-identity-rhs}
             &
             \iltikzfig{circuits/axioms/belnap/and-identity-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/and-identity-rhs}
             &
             \iltikzfig{circuits/axioms/belnap/or-annihilator-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/or-annihilator-rhs}
             &
             \iltikzfig{circuits/axioms/belnap/and-annihilator-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/and-annihilator-rhs}
         \end{align*}
         \begin{align*}
             \iltikzfig{circuits/axioms/belnap/or-idempotent-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/or-idempotent-rhs}
             &
             \iltikzfig{circuits/axioms/belnap/and-idempotent-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/and-idempotent-rhs}
             &
             \iltikzfig{circuits/axioms/belnap/absorption-1-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/absorption-1-rhs}
             &
             \iltikzfig{circuits/axioms/belnap/absorption-2-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/absorption-2-rhs}
         \end{align*}
         \begin{align*}
             \iltikzfig{circuits/axioms/belnap/or-and-distributivity-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/or-and-distributivity-rhs}
             &
             \iltikzfig{circuits/axioms/belnap/and-or-distributivity-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/and-or-distributivity-rhs}
         \end{align*}
         \begin{align*}
             \iltikzfig{circuits/axioms/belnap/double-negation-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/double-negation-rhs}
             &
             \iltikzfig{circuits/axioms/belnap/de-morgan-1-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/de-morgan-1-rhs}
             &
             \iltikzfig{circuits/axioms/belnap/de-morgan-2-lhs}
-            &\eqaxioms{\mathcal{P}}
+            &\eqaxioms[(\mealyequation)]{}
             \iltikzfig{circuits/axioms/belnap/de-morgan-2-rhs}
         \end{align*}
-        \caption{A (not necessarily minimal) set of equations \(\mathcal{P}\) which is combinationally complete for \(\interpretation_\star\), adapted from~\cite{rodrigues1998translation}.}
+        \caption{A set of equations derivable using the `Mealy equation', .}
         \label{fig:combinational-axioms}
     \end{figure}
 
+    \noindent
+    This equivalence may look obtuse at first glance, but many familiar equations can be derived using it: a selection is shown in \cref{fig:bialgebra-axioms,fig:combinational-axioms}.
+    With this equation, the final result can be shown.
+
     \begin{theorem}[Full abstraction]
-        For an interpretation \(\interpretation\), let \(\mathcal{E}\) be a set of equations combinationally complete for \(\interpretation\).
-        Then \(\iltikzfig{circuits/components/circuits/f-seq} \eqaxioms{\mathcal{C} + \mathcal{B} + \mathcal{E}}\iltikzfig{circuits/components/circuits/g-seq}\) if and only if \(\circuittostream[\iltikzfig{circuits/components/circuits/f-seq}]{\interpretation} = \circuittostream[\iltikzfig{circuits/components/circuits/g-seq}]{\interpretation}\).
+        \(\iltikzfig{circuits/components/circuits/f-seq} \eqaxioms{\closedcombequations + \mealyequation}\iltikzfig{circuits/components/circuits/g-seq}\) if and only if \(\circuittostream[\iltikzfig{circuits/components/circuits/f-seq}]{\interpretation} = \circuittostream[\iltikzfig{circuits/components/circuits/g-seq}]{\interpretation}\).
     \end{theorem}
 
     \noindent
